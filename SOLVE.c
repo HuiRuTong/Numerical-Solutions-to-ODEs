@@ -44,7 +44,7 @@ void solve_ivp(FILE *output, ODE ode, SOLVER solver, double *x_init, double t_in
     t = t_init;
 
     if (t != upp_lim) {     // I have no idea why you'd ever have t_init be the largest point but eh
-        while (t < upp_lim) {
+        while (t <= upp_lim - dt) {
             t += dt;
             propagate(&x_0, &x, &t_0, t, output, ode, solver, x_init, t_init, err_or_steps);
         }

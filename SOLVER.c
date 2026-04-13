@@ -67,9 +67,9 @@ double *rk23(ODE ode, double *x_0, double t_0, double t, double err_tol) {
     if (t == t_0) {
         return x;
     } else if (t < t_0) {
-        h = -1e-3;
+        h = -INIT_STEP;
     } else {
-        h = 1e-3;
+        h = INIT_STEP;
     }
 
     double *k_1 = malloc(sizeof(double) * NUM_OF_VAR);
@@ -98,13 +98,15 @@ double *rk23(ODE ode, double *x_0, double t_0, double t, double err_tol) {
         }
         err = pow(err, 0.5);
 
-        if (err >= err_tol) {
-            h *= 0.8*pow(err_tol / err, 1/3.0);
-        } else {
+        // After much frustration, I've decided to hardcode a stop for this thing
+        // Any negligible h means the loop has practically stopped anyway
+        if (err <= err_tol || fabs(h) < MIN_STEP) {
             for (int i = 0; i < NUM_OF_VAR; i++) {
                 x[i] += (2*k_1[i] + 3*k_2[i] + 4*k_3[i] ) * h / 9.0;
             }
             t_0 += h;
+        } else {
+            h *= 0.8*pow(err_tol / err, 1/3.0);
         }
 
         err = 0;
@@ -180,13 +182,13 @@ double *rk45(ODE ode, double *x_0, double t_0, double t, double err_tol) {
         }
         err = pow(err, 0.5);
 
-        if (err >= err_tol) {
-            h *= 0.9*pow(err_tol / err, 1/5.0);
-        } else {
+        if (err <= err_tol || fabs(h) < MIN_STEP) {
             for (int i = 0; i < NUM_OF_VAR; i++) {
                 x[i] += (14*k_1[i] + 35*k_4[i] + 162*k_5[i] + 125*k_6[i]) * h / 336.0;
             }
             t_0 += h;
+        } else {
+            h *= 0.9*pow(err_tol / err, 1/5.0);
         }
 
         err = 0;
@@ -208,13 +210,8 @@ double *shoot(ODE ode, BOUND low_bound, BOUND upp_bound, SOLVER solver, double e
         ode             : function defining system of ODEs
         low_bound       : lower boundary conditions to define non-free variables and initialise x_0
         upp_bound       : upper boundary conditions to compute the error of an approximation
-        free_val        : vector of starting guesses for unknown x_i(low_t)
-        init_values     : vector of the initial vectors at the lower boundary, low_t
-        low_t           : value of t at lower boundary
-        upp_t           : value of t at upper boundary
-                          need not be > low_t; in fact, you should pick upp_t such that NUM_OF_FREE is minimised
+        solver          : the solver used (euler, rk23, or rk45)
         err_or_steps    : error tolerance for rk or number of steps for euler
-        discrepancy     : maximum error allowed for the approximation of free_val
     */
 
     double *x_0 = malloc(sizeof(double) * NUM_OF_VAR);
@@ -233,7 +230,7 @@ double *shoot(ODE ode, BOUND low_bound, BOUND upp_bound, SOLVER solver, double e
         upp_bound(err, x, UPP_T);
 
         for (int i = 0; i < NUM_OF_FREE; i++) {
-            if (err[i] > DISCREPANCY) {
+            if (err[i] >= DISCREPANCY) {
                 break;
             }
             goto end_while;

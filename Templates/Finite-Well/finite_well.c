@@ -28,7 +28,7 @@ const double T_INIT = 0;
 /* BVP: */
 const int NUM_OF_FREE = 2;
 
-double FREE_VAL[] = {-0.1, 0.1};
+double FREE_VAL[] = {-1e-2, 1e-2};
 
 const double LOW_T = -0.5;
 const double UPP_T = 0.5;

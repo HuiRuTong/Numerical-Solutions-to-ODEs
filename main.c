@@ -37,7 +37,8 @@ int main(int argc, char *argv[]) {
     double low_lim = atof(argv[2]);
     double upp_lim = atof(argv[3]);
     double err_or_steps = atof(argv[4]);
-    int num_of_pts = atoi(argv[5]);
+    int num_of_pts = atoi(argv[5]);     // Due to bad math and laziness, the actual number of pts
+                                        // generated is this +- 1
     FILE *output = fopen("results.txt", "w");
 
     printf("Writing to file. Do not close the program.\n");
@@ -54,12 +55,16 @@ int main(int argc, char *argv[]) {
             exit(1);
         }
     } else {
-        if (argc == 7) {
-            printf("Invalid number of arguments!\n");
-            exit(0);
+        if (!strcmp(argv[6], "euler")) {
+            solve_bvp(output, ode, low_bound, upp_bound, euler, low_lim, upp_lim, err_or_steps, num_of_pts);
+        } else if (!strcmp(argv[6], "rk23")) {
+            solve_bvp(output, ode, low_bound, upp_bound, rk23, low_lim, upp_lim, err_or_steps, num_of_pts);
+        } else if (!strcmp(argv[6], "rk45")) {
+            solve_bvp(output, ode, low_bound, upp_bound, rk45, low_lim, upp_lim, err_or_steps, num_of_pts);
+        } else {
+            printf("Invalid arguments!\n");
+            exit(1);
         }
-
-        solve_bvp(output, ode, low_bound, upp_bound, rk23, low_lim, upp_lim, err_or_steps, num_of_pts);
     }
     time_t end = time(NULL);
     printf("Time taken: %ld epochs\n", (end - begin));
