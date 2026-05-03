@@ -5,7 +5,7 @@ import matplotlib.animation as animation
     
 NUM_OF_VAR = 12
 num_of_pts = 0
-results = open("r3_body_results.txt", "r")
+results = open("3_body_results.txt", "r")
 for l in results:
     num_of_pts += 1
 results.seek(0, os.SEEK_SET)
