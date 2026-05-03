@@ -1,46 +1,81 @@
 #include <math.h>
 
 /*
-    This solves for the bound states of the quantum finite
-    square well (when E < V).
-
-    x[0], x[2]  : wavefunction outside and inside the well respectively
-    x[1], x[3]  : derivative of x[0] and x[2] respectively
+    This is an example of what your config files should look like.
+    If you're solving an IVP, you should leave the BVP section untouched,
+    and vice versa. Because C is annoying, you can't delete the unneeded
+    variables.
 */
 
 /* MANDATORY: */
-const int NUM_OF_VAR = 4;
+// total number of variables in an ode
+const int NUM_OF_VAR = 2;
 
+// system of ode; see CONFIg.c for more details
 void ode(double *dx, double *x, double t) {
-    dx[0] = x[1];
-    dx[1] = -2*(5+0.5)*x[0];
-    dx[2] = x[3];
-    dx[3] = -2*x[2];
+    /*
+        This function defines a system of ODEs.
+
+        dx  : vector representing the first derivative of x at t
+        x   : vector representing the values of x at t
+        t   : do you really need a descriptor for this?
+
+        Below is an example of the system:
+            x_1' = 2(x_2) + 3t
+            x_2' = e^(-4t)
+    */
+    dx[0] = 2*x[1] + 3*t;
+    dx[1] = exp(-4*t);
 }
 
 
 /* IVP: */
-double X_INIT[] = {};
+// vector representing initial values
+double X_INIT[] = {-2.0, 3.368132};     // MAKE SURE you enter the right amount of elements 
 
+// initial value of t
 const double T_INIT = 0;
 
 
 /* BVP: */
-const int NUM_OF_FREE = 2;
+// number of free variables in a bvp
+const int NUM_OF_FREE = 1;
 
-double FREE_VAL[] = {-0.1, 0.1};
+// vector representing guesses for unknown initial values
+double FREE_VAL[] = {2};
 
-const double LOW_T = -0.5;
-const double UPP_T = 0.5;
+// value of t at the lower and upper boundaries
+// UPP_T need not be > LOW_T; in fact, you should pick UPP_T such that NUM_OF_FREE is minimised
+const double LOW_T = 1;
+const double UPP_T = 0;
 
+// boundaries
 void low_bound(double *x_0, double *free_val, double t) {
-    x_0[2] = free_val[0];
-    x_0[3] = free_val[1];
+    /*
+        This function defines the lower boundary of a bvp
 
-    x_0[0] = x_0[2];
-    x_0[1] = x_0[3];
+        x_0         : vector representing the values of x at the lower boundary
+        free_val    : vector representing guesses for the unknown initial values of x
+        t           : value of t at lower boundary i.e. low_t
+
+        Note that you have to manually assign each free_val[j] to their respective x_0[i].
+        Below is an example of the bounds:
+            x_2(low_t) = x_1(low_t) - 3
+    */
+   x_0[0] = free_val[0];
+   x_0[1] = x_0[0] - 3;
 }
 void upp_bound(double *err, double *x, double t) {
-    err[0] = x[2] - x[0];
-    err[1] = x[3] - x[1];
+    /*
+        This function defines the upper boundary of a bvp
+
+        err         : vector representing the difference between the upper boundaries and x
+        x           : vector representing the estimated values of x at the upper boundary
+        t           : value of t at lower boundary i.e. low_t
+
+        Below is an example of the bounds:
+            x_1(upp_t) = -2
+            -> x_1(upp_t) + 2 = 0
+    */
+   err[0] = x[0] + 2;
 }
